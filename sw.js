@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'verizh-cache-v5'; // 每次部署或修改核心資源時，請手動遞增此版本號
+const CACHE_NAME = 'verizh-cache-v7';
 
 const URLS_TO_CACHE = [
   './',
