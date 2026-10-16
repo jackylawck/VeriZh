@@ -1,0 +1,33 @@
+{
+  "_metadata": {
+    "version": 3,
+    "lastUpdated": "2026-10-16",
+    "description": "VeriZh 企業術語註冊表"
+  },
+  "数字政策局": {
+    "target": "數字政策辦公室",
+    "level": "L1",
+    "status": "Approved",
+    "note": "2024年7月25日正式成立",
+    "source": { "name": "香港數字政策辦公室", "url": "https://www.digitalpolicy.gov.hk" }
+  },
+  "五险一金": {
+    "target": "五險一金",
+    "level": "L4",
+    "status": "Draft",
+    "note": "需法律專家確認。不可直接對譯為香港強積金(MPF)"
+  },
+  "海内存知己": {
+    "target": "海內存知己",
+    "level": "L4",
+    "status": "Approved",
+    "note": "防禦 mmseg 錯誤切分「内存」"
+  },
+  "文件夹": { 
+    "target": "資料夾", 
+    "level": "L2", 
+    "status": "AutoReplace", 
+    "note": "強制替換為香港標準用語",
+    "source": { "name": "微軟繁體中文在地化指南", "url": "https://learn.microsoft.com/zh-tw/style-guide/traditional-chinese" }
+  }
+}
