@@ -1,0 +1,78 @@
+name: CI/CD to GitHub Pages
+
+on:
+  # 當代碼推送到 main 分支時觸發
+  push:
+    branches: ["main"]
+  # 允許從 GitHub Actions 介面手動觸發
+  workflow_dispatch:
+
+# 設定 GitHub Pages 所需的權限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 確保同一時間只有一個發布任務在執行
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 階段一：自動化測試與合規審計 (CI)
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取得代碼
+        uses: actions/checkout@v4
+      
+      - name: 設定 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: 安裝依賴庫與下載字庫 (執行 postinstall)
+        run: npm ci
+        
+      - name: 執行 CSP 資安稽核與字準斷言測試
+        run: npm test
+
+  # 階段二：打包與發布至 GitHub Pages (CD)
+  deploy:
+    # 必須等待 test 階段成功通過才能發布
+    needs: test
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取得代碼
+        uses: actions/checkout@v4
+        
+      - name: 設定 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: 安裝依賴庫與下載字庫
+        run: npm ci
+
+      - name: 準備乾淨的發布資料夾 (排除 node_modules)
+        run: |
+          mkdir deploy_dist
+          cp index.html app.js worker.js sw.js manifest.json deploy_dist/
+          cp -r assets deploy_dist/
+          # 建立 .nojekyll 檔案，防止 GitHub Pages 忽略底線開頭的隱藏檔案
+          touch deploy_dist/.nojekyll
+
+      - name: 配置 GitHub Pages 環境
+        uses: actions/configure-pages@v5
+        
+      - name: 上傳靜態檔案構建產物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './deploy_dist'
+          
+      - name: 部署至 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
