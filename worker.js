@@ -4,7 +4,8 @@ let scriptsLoaded = true;
 
 try {
   // 合併載入核心腳本，確保依賴項依序解析
-  importScripts('./assets/js/opencc.js', './dict-store.js', './custom-dict.js');
+  // 💡 修正：已將 dict-store.js 替換為 terms-db.js 以繞過快取與廣告阻擋
+  importScripts('./assets/js/opencc.js', './terms-db.js', './custom-dict.js');
   
   if (typeof OpenCC === 'undefined' || typeof TerminologyStore === 'undefined' || typeof applyProtectionAndConversion === 'undefined') {
     scriptsLoaded = false;
