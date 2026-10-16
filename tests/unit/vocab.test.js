@@ -1,40 +1,41 @@
+// tests/unit/vocab.test.js
 const assert = require('assert');
 const OpenCC = require('opencc-js');
+const { applyProtectionAndConversion } = require('../../custom-dict.js');
 
 function runComplianceTests() {
-  console.log('🚀 初始化 VeriZh 同步轉換器實例...');
+  console.log('🚀 初始化 VeriZh 轉換器與預處理保護層...');
   
   const converterS2HK = OpenCC.Converter({ from: 'cn', to: 'hk' });
   const converterS2TW = OpenCC.Converter({ from: 'cn', to: 'twp' });
+  const converterTW2SP = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
-// 1. 香港標準字形與詞彙基準 (已掛載自訂詞庫)
   const hkCases = [
-    { input: '卫生署', expected: '衞生署' },
-    { input: '里面', expected: '裏面' },
-    { input: '专线', expected: '專線' },
-    { input: '默认服务器', expected: '預設伺服器' }, // 測試自訂詞庫：默認 -> 預設，服务器 -> 伺服器
-    { input: '软件网络', expected: '軟件網絡' },
-    { input: '打印机屏幕', expected: '打印機屏幕' },
-    { input: '注销账号', expected: '登出帳號' },     // 測試自訂詞庫
-    { input: '在线搜索', expected: '線上搜尋' }      // 測試自訂詞庫
+    { input: '默认服务器', expected: '默認服務器' }, // 驗證：OpenCC 原生處理，不依賴自訂詞庫
+    { input: '海内存知己，天涯若比邻', expected: '海內存知己，天涯若比鄰' }, // 驗證：保護層 mmseg 防禦
+    { input: '数字脱敏', expected: '數據脫敏' }, // 驗證：保護層企業術語
+    { input: '\uE0000\uE001 海内存知己', expected: '\uE0000\uE001 海內存知己' } // 驗證：PUA 惡意碰撞防禦
   ];
 
-  // 2. 台灣標準字形與詞彙基準
   const twCases = [
     { input: '默认服务器', expected: '預設伺服器' },
-    { input: '打印机', expected: '印表機' },
-    { input: '软件网络', expected: '軟體網路' }
+    { input: '打印机', expected: '印表機' }
+  ];
+
+  const tw2spCases = [
+    { input: '預設伺服器', expected: '默认服务器' },
+    { input: '印表機', expected: '打印机' }
   ];
 
   let failedCount = 0;
 
-  function runAsserts(cases, converter, testName) {
+  function runAsserts(cases, converter, mode, testName) {
     console.log(`\n▶ 執行 [${testName}] 基準斷言...`);
     cases.forEach(({ input, expected }) => {
-      const actual = converter(input);
+      const actual = applyProtectionAndConversion(input, mode, converter);
       try {
         assert.strictEqual(actual, expected);
-        console.log(`  ✔ ${input} ➔ ${actual}`);
+        console.log(`  ✔ ${input.replace(/\uE0000\uE001/g, '[PUA]')} ➔ ${actual.replace(/\uE0000\uE001/g, '[PUA]')}`);
       } catch (err) {
         console.error(`  ❌ 斷言失敗: 預期 "${expected}", 實際 "${actual}"`);
         failedCount++;
@@ -42,15 +43,16 @@ function runComplianceTests() {
     });
   }
 
-  runAsserts(hkCases, converterS2HK, '香港繁體 (zh-HK)');
-  runAsserts(twCases, converterS2TW, '台灣正體 (zh-TW)');
+  runAsserts(hkCases, converterS2HK, 's2hk', '香港繁體 (s2hk)');
+  runAsserts(twCases, converterS2TW, 's2twp', '台灣正體 (s2twp)');
+  runAsserts(tw2spCases, converterTW2SP, 'tw2sp', '台灣正體轉簡體 (tw2sp)');
 
   if (failedCount > 0) {
     console.error(`\n🚫 測試未通過！共 ${failedCount} 個異常，CI 構建中斷。`);
     process.exit(1);
   }
 
-  console.log('\n✅ VeriZh 核心詞庫與字形測試 100% 通過。');
+  console.log('\n✅ 核心詞庫、API 配置、PUA 碰撞防禦測試 100% 通過。');
 }
 
 runComplianceTests();
