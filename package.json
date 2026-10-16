@@ -6,15 +6,15 @@
   "engines": {
     "node": ">=18.0.0"
   },
-"scripts": {
-  "setup": "mkdir -p assets/js && cp node_modules/opencc-js/dist/umd/full.js assets/js/opencc.js",
-  "postinstall": "npm run setup",
-  "start": "http-server . -p 8080 -c-1",
-  "serve": "http-server . -p 8080",
-  "test": "jest",
-  "test:watch": "jest --watch",
-  "audit:csp": "node scripts/audit-csp.js",
-  "audit:security": "npm audit --audit-level=moderate"
+  "scripts": {
+    "setup": "mkdir -p assets/js && cp node_modules/opencc-js/dist/umd/full.js assets/js/opencc.js",
+    "postinstall": "npm run setup",
+    "start": "http-server . -p 8080 -c-1",
+    "serve": "http-server . -p 8080",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "audit:csp": "node scripts/audit-csp.js",
+    "audit:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "opencc-js": "^1.4.2"
