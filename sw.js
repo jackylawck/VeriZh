@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'verizh-cache-v10';
+const CACHE_NAME = 'verizh-cache-v11';
 
 const URLS_TO_CACHE = [
   './',
@@ -7,7 +7,7 @@ const URLS_TO_CACHE = [
   './app.js',
   './worker.js',
   './custom-dict.js',
-  './dict-store.js',
+  './terms-db.js', // 修正：已替換為新檔名 terms-db.js
   './manifest.json',
   './assets/js/opencc.js',
   './assets/css/style.css',
@@ -83,7 +83,7 @@ self.addEventListener('fetch', event => {
           return caches.match(event.request).then(cached => {
             if (cached) return cached;
             
-            // 優雅降級：若快取為空，回傳標準 503 錯誤 JSON，讓 dict-store.js 觸發安全處理
+            // 優雅降級：若快取為空，回傳標準 503 錯誤 JSON，讓 terms-db.js 觸發安全處理
             return new Response(JSON.stringify({ error: 'OFFLINE_NO_CACHE' }), {
               status: 503,
               headers: { 'Content-Type': 'application/json' }
