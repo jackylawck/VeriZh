@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'verizh-cache-v9';
+const CACHE_NAME = 'verizh-cache-v10';
 
 const URLS_TO_CACHE = [
   './',
