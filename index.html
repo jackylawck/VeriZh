@@ -18,7 +18,7 @@
   <meta property="og:url" content="https://jackylawck.github.io/VeriZh/">
   <meta property="og:title" content="字準 VeriZh | 隱私優先的企業級繁簡轉換工具">
   <meta property="og:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
-  <meta property="og:image" content="https://jackylawck.github.io/VeriZh/assets/VeriZh512icon.png">
+  <meta property="og:image" content="https://jackylawck.github.io/VeriZh/VeriZh512icon.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
   <meta property="og:image:alt" content="字準 VeriZh 品牌標誌">
@@ -29,7 +29,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="字準 VeriZh | 企業級繁簡轉換工具">
   <meta name="twitter:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
-  <meta name="twitter:image" content="https://jackylawck.github.io/VeriZh/assets/VeriZh512icon.png">
+  <meta name="twitter:image" content="https://jackylawck.github.io/VeriZh/VeriZh512icon.png">
 
   <!-- 📱 PWA 與行動裝置設定 (Add to Home Screen 支援) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -40,7 +40,7 @@
   <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <meta name="application-name" content="字準 VeriZh">
   <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./assets/VeriZh192icon.png">
+  <link rel="apple-touch-icon" href="./VeriZh192icon.png">
 
   <!-- 🛡️ 企業級安全策略：Content Security Policy (CSP) 與權限隔離 -->
   <!-- 保持極致嚴格，不允許任何外部連線 (connect-src 'none') -->
@@ -69,6 +69,9 @@
       --border-color: #e5e5e5;
       --accent-color: #0066ff;
       --install-bg: #e6f0ff;
+      --warning-bg: #fff3cd;
+      --warning-text: #856404;
+      --warning-border: #ffeeba;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -79,6 +82,9 @@
         --border-color: #333333;
         --accent-color: #3388ff;
         --install-bg: #1a2b4c;
+        --warning-bg: #332701;
+        --warning-text: #ffdf7e;
+        --warning-border: #4d3a02;
       }
     }
     body {
@@ -93,13 +99,26 @@
     
     /* PWA 安裝按鈕 */
     #installBtn {
-      display: none; /* 預設隱藏，符合安裝條件時透過 JS 顯示 */
+      display: none; 
       background: var(--install-bg); color: var(--accent-color);
       border: 1px solid var(--accent-color); padding: 0.5rem 1rem;
       border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer;
       transition: all 0.2s ease;
     }
     #installBtn:hover { background: var(--accent-color); color: white; }
+
+    /* 動態警告提示條 */
+    #warningBanner {
+      display: none;
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
+      border: 1px solid var(--warning-border);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
 
     .workspace { display: flex; gap: 1.5rem; flex: 1; min-height: 0; }
     .panel { 
@@ -152,6 +171,9 @@
     </select>
     <span class="subtitle" id="statusIndicator">Ready</span>
   </div>
+
+  <!-- 新增：動態警告提示條 -->
+  <div id="warningBanner" role="alert"></div>
 
   <div class="workspace">
     <div class="panel">
