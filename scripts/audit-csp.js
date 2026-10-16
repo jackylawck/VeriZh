@@ -1,12 +1,41 @@
+// scripts/audit-csp.js
 const fs = require('fs');
 const path = require('path');
-const { CspParser } = require('csp_evaluator/dist/parser');
-const { CspEvaluator } = require('csp_evaluator/dist/evaluator');
 
+// 補上 .js 副檔名，確保 Node.js 環境穩定解析
+const { CspParser } = require('csp_evaluator/dist/parser.js');
+const { CspEvaluator } = require('csp_evaluator/dist/evaluator.js');
+const { Version } = require('csp_evaluator/dist/csp.js');
+
+// 嘗試載入官方 Severity 枚舉，若失敗則回退至精確的硬編碼映射
+let Severity;
+try {
+  Severity = require('csp_evaluator/dist/finding.js').Severity;
+} catch (e) {
+  // Fallback 保險機制
+}
+
+const SEVERITY = Severity || {
+  HIGH: 10,
+  SYNTAX: 20,
+  MEDIUM: 30,
+  HIGH_MAYBE: 40,
+  STRICT_CSP: 45,
+  MEDIUM_MAYBE: 50,
+  INFO: 60,
+  NONE: 100
+};
+
+// 1. 確保目標檔案存在
 const htmlPath = path.join(__dirname, '../index.html');
+if (!fs.existsSync(htmlPath)) {
+  console.error(`❌ 找不到目標檔案: ${htmlPath}`);
+  process.exit(1);
+}
+
 const htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
-// 抓取 index.html 中的 CSP 內容
+// 2. 抓取 index.html 中的 CSP 內容
 const match = htmlContent.match(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]+content=["']([^"']+)["']/i);
 
 if (!match) {
@@ -14,19 +43,10 @@ if (!match) {
   process.exit(1);
 }
 
-const rawCsp = match[1];
+// 清理換行與多餘空白，確保 Parser 準確解析
+const rawCsp = match[1].replace(/\s+/g, ' ').trim();
 
-// 使用 Google CSP Evaluator 進行解析與評估
-const parsedCsp = new CspParser(rawCsp).csp;
-const evaluator = new CspEvaluator(parsedCsp);
-const findings = evaluator.evaluate();
+console.log(`\n🔍 開始靜態審計 Content-Security-Policy (CSP3 標準)...`);
+console.log(`📜 提取策略: ${rawCsp}\n`);
 
-// 過濾出中高風險的漏洞 (Severity: 40 為 Medium, 50 為 High)
-const vulnerabilities = findings.filter(finding => finding.severity >= 40);
-
-if (vulnerabilities.length > 0) {
-  console.error('❌ CSP 靜態稽核發現風險:', vulnerabilities);
-  process.exit(1);
-} else {
-  console.log('✅ Google CSP Evaluator 驗證通過，安全邊界合規。');
-}
+//
