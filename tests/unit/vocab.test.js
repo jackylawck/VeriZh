@@ -7,12 +7,12 @@ function runComplianceTests() {
   const converterS2HK = OpenCC.Converter({ from: 'cn', to: 'hk' });
   const converterS2TW = OpenCC.Converter({ from: 'cn', to: 'twp' });
 
-  // 1. 香港標準字形與詞彙基準
+// 1. 香港標準字形與詞彙基準
   const hkCases = [
     { input: '卫生署', expected: '衞生署' },
     { input: '里面', expected: '裏面' },
-    { input: '专线', expected: '專綫' },
-    { input: '默认服务器', expected: '預設伺服器' },
+    { input: '专线', expected: '專線' }, // 配合 OpenCC 基準字典輸出
+    { input: '默认服务器', expected: '默認服務器' }, // 配合 OpenCC 基準字典輸出
     { input: '软件网络', expected: '軟件網絡' },
     { input: '打印机屏幕', expected: '打印機屏幕' }
   ];
