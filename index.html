@@ -23,133 +23,48 @@
   <meta property="og:image:height" content="512">
   <meta property="og:image:alt" content="字準 VeriZh 品牌標誌">
   <meta property="og:locale" content="zh_HK">
+  <meta property="og:locale:alternate" content="zh_TW">
   <meta property="og:site_name" content="字準 VeriZh">
 
   <!-- 🐦 Twitter Cards -->
-  <meta name="twitter:card" content="summary_large_image">
+  <!-- 💡 修正：改用 summary 模式，完美適配 512x512 (1:1) 的正方形 Icon，避免圖片被裁切 -->
+  <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="字準 VeriZh | 企業級繁簡轉換工具">
   <meta name="twitter:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
   <meta name="twitter:image" content="https://jackylawck.github.io/VeriZh/VeriZh512icon.png">
 
-  <!-- 📱 PWA 與行動裝置設定 (Add to Home Screen 支援) -->
+  <!-- 📱 PWA 與行動裝置設定 -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="字準 VeriZh">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <meta name="application-name" content="字準 VeriZh">
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./VeriZh192icon.png">
 
-  <!-- 🛡️ 企業級安全策略：Content Security Policy (CSP) 與權限隔離 -->
-  <!-- 保持極致嚴格，不允許任何外部連線 (connect-src 'none') -->
+  <!-- 🛡️ 企業級安全策略：終極嚴格 CSP，完全消滅 unsafe-inline -->
+  <!-- 💡 修正：default-src 設為 'self' 拯救 Safari PWA，並顯式阻斷 object 與 frame -->
   <meta http-equiv="Content-Security-Policy" content="
-    default-src 'none'; 
-    script-src 'self' 'unsafe-inline'; 
-    style-src 'self' 'unsafe-inline'; 
+    default-src 'self'; 
+    script-src 'self'; 
+    style-src 'self'; 
     img-src 'self' data:; 
     manifest-src 'self'; 
     worker-src 'self'; 
-    connect-src 'none'; 
+    connect-src 'self'; 
+    object-src 'none';
+    frame-ancestors 'none';
     base-uri 'none'; 
     form-action 'none';
   ">
-  <!-- 嚴格權限隔離：關閉所有不必要的手機硬體權限 -->
+  <!-- 嚴格權限隔離：(註：Safari 不支援 meta 形式，此為 Chrome 體系的防禦性冗餘) -->
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
-  <style>
-    /* 現代 Linear/Notion 風格極簡 UI */
-    :root {
-      --bg-color: #ffffff;
-      --surface-color: #f9f9fb;
-      --text-primary: #1a1a1a;
-      --text-secondary: #666666;
-      --border-color: #e5e5e5;
-      --accent-color: #0066ff;
-      --install-bg: #e6f0ff;
-      --warning-bg: #fff3cd;
-      --warning-text: #856404;
-      --warning-border: #ffeeba;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-color: #121212;
-        --surface-color: #1e1e1e;
-        --text-primary: #f0f0f0;
-        --text-secondary: #a0a0a0;
-        --border-color: #333333;
-        --accent-color: #3388ff;
-        --install-bg: #1a2b4c;
-        --warning-bg: #332701;
-        --warning-text: #ffdf7e;
-        --warning-border: #4d3a02;
-      }
-    }
-    body {
-      margin: 0; padding: 2rem;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-color); color: var(--text-primary);
-      display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
-    }
-    header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
-    .header-text h1 { font-size: 1.5rem; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
-    .subtitle { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem; }
-    
-    /* PWA 安裝按鈕 */
-    #installBtn {
-      display: none; 
-      background: var(--install-bg); color: var(--accent-color);
-      border: 1px solid var(--accent-color); padding: 0.5rem 1rem;
-      border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    #installBtn:hover { background: var(--accent-color); color: white; }
-
-    /* 動態警告提示條 */
-    #warningBanner {
-      display: none;
-      background-color: var(--warning-bg);
-      color: var(--warning-text);
-      border: 1px solid var(--warning-border);
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
-      line-height: 1.5;
-    }
-
-    .workspace { display: flex; gap: 1.5rem; flex: 1; min-height: 0; }
-    .panel { 
-      flex: 1; display: flex; flex-direction: column; 
-      background: var(--surface-color); border: 1px solid var(--border-color);
-      border-radius: 8px; overflow: hidden;
-    }
-    .panel-header {
-      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.875rem; font-weight: 500;
-    }
-    textarea {
-      flex: 1; width: 100%; padding: 1rem; border: none; resize: none;
-      background: transparent; color: inherit; font-family: inherit; font-size: 1rem;
-      line-height: 1.6; outline: none; box-sizing: border-box;
-    }
-    .controls { margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
-    select, button {
-      padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 6px;
-      border: 1px solid var(--border-color); background: var(--surface-color); color: inherit;
-      cursor: pointer;
-    }
-    button.primary { background: var(--accent-color); color: white; border: none; font-weight: 500; }
-    
-    @media (max-width: 768px) {
-      .workspace { flex-direction: column; }
-      body { padding: 1rem; }
-      header { flex-direction: column; gap: 1rem; }
-    }
-  </style>
+  <!-- 🎨 樣式表已抽離以符合 CSP 安全規範 -->
+  <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body>
 
@@ -164,23 +79,23 @@
 
   <div class="controls">
     <select id="conversionMode" aria-label="選擇轉換模式">
-      <option value="s2hk">簡體 ➔ 香港繁體 (附地區詞彙)</option>
-      <option value="hk2s">香港繁體 ➔ 簡體</option>
-      <option value="s2twp">簡體 ➔ 台灣正體 (附地區詞彙)</option>
-      <option value="tw2sp">台灣正體 ➔ 簡體 (附地區詞彙)</option>
+      <option value="s2hk">簡體 ➔ 香港繁體 (字形轉換 + 企業術語)</option>
+      <option value="hk2s">香港繁體 ➔ 簡體 (純字形轉換)</option>
+      <option value="s2twp">簡體 ➔ 台灣正體 (字形轉換 + 內建地區詞彙)</option>
+      <option value="tw2sp">台灣正體 ➔ 簡體 (字形轉換 + 大陸詞彙)</option>
     </select>
-    <span class="subtitle" id="statusIndicator">Ready</span>
+    
+    <span class="subtitle" id="statusIndicator" role="status" aria-live="polite">⏳ 載入企業術語庫中...</span>
   </div>
 
-  <!-- 新增：動態警告提示條 -->
-  <div id="warningBanner" role="alert"></div>
+  <div id="warningBanner" role="alert" aria-live="assertive"></div>
 
   <div class="workspace">
     <div class="panel">
       <div class="panel-header">
         <span>輸入文本 (本地處理)</span>
       </div>
-      <textarea id="sourceText" placeholder="在此貼上或輸入文字..."></textarea>
+      <textarea id="sourceText" aria-label="輸入要轉換的文字" placeholder="在此貼上或拖曳純文字檔案 (.txt, .md, .csv) ..."></textarea>
     </div>
     
     <div class="panel">
@@ -188,7 +103,7 @@
         <span>轉換結果</span>
         <button id="copyBtn" aria-label="複製結果">複製</button>
       </div>
-      <textarea id="targetText" readonly placeholder="轉換結果將顯示於此..."></textarea>
+      <textarea id="targetText" aria-label="轉換結果" readonly placeholder="轉換結果將顯示於此..."></textarea>
     </div>
   </div>
 
