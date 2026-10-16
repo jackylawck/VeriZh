@@ -27,13 +27,12 @@
   <meta property="og:site_name" content="字準 VeriZh">
 
   <!-- 🐦 Twitter Cards -->
-  <!-- 💡 修正：改用 summary 模式，完美適配 512x512 (1:1) 的正方形 Icon，避免圖片被裁切 -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="字準 VeriZh | 企業級繁簡轉換工具">
   <meta name="twitter:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
   <meta name="twitter:image" content="https://jackylawck.github.io/VeriZh/VeriZh512icon.png">
 
-  <!-- 📱 PWA 與行動裝置設定 -->
+  <!-- 📱 PWA 與網站圖示設定 (消滅 404 紅字) -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,23 +41,11 @@
   <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <meta name="application-name" content="字準 VeriZh">
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./VeriZh192icon.png">
   <link rel="apple-touch-icon" href="./VeriZh192icon.png">
 
-  <!-- 🛡️ 企業級安全策略：終極嚴格 CSP，完全消滅 unsafe-inline -->
-  <!-- 💡 修正：default-src 設為 'self' 拯救 Safari PWA，並顯式阻斷 object 與 frame -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self'; 
-    script-src 'self'; 
-    style-src 'self'; 
-    img-src 'self' data:; 
-    manifest-src 'self'; 
-    worker-src 'self'; 
-    connect-src 'self'; 
-    object-src 'none';
-    base-uri 'none'; 
-    form-action 'none';
-  ">
-  <!-- 嚴格權限隔離：(註：Safari 不支援 meta 形式，此為 Chrome 體系的防禦性冗餘) -->
+  <!-- 🛡️ 企業級安全策略：嚴格 CSP 規範 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';">
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
