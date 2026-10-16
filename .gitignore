@@ -1,0 +1,21 @@
+# 依賴套件目錄
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 測試與覆蓋率報告
+coverage/
+.nyc_output/
+
+# 系統與編輯器快取
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 本地環境設定檔
+.env
+.env.local
