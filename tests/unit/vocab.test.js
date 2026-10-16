@@ -6,7 +6,9 @@ describe('VeriZh 核心轉換與防禦邏輯測試', () => {
   // 1. 嚴格對齊 OpenCC 合法 Locale 參數
   const converterS2HK = OpenCC.Converter({ from: 'cn', to: 'hk' });   // 簡體 -> 香港繁體 (僅字形)
   const converterS2TW = OpenCC.Converter({ from: 'cn', to: 'twp' });  // 簡體 -> 台灣正體 (含詞彙)
-  const converterTW2SP = OpenCC.Converter({ from: 'tw', to: 'cn' });  // 台灣繁體 -> 簡體 (含大陸詞彙)
+  
+  // 💡 修正：將 from 改為 'twp'，啟動台灣地區詞彙的反向對譯字典
+  const converterTW2SP = OpenCC.Converter({ from: 'twp', to: 'cn' }); // 台灣繁體(含詞彙) -> 簡體
 
   // 2. 模擬企業術語庫 (Mock DictCache)
   const mockDictCache = {
