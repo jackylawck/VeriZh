@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "audit:csp": "node -e \"const {checkCsp} = require('csp_evaluator'); const fs = require('fs'); const match = fs.readFileSync('index.html', 'utf8').match(/content=['\\\"]([^'\\\"]+)['\\\"]/); if(match) { const res = checkCsp(match[1]); if(res.length > 0) { console.error('CSP Vulnerabilities:', res); process.exit(1); } else { console.log('CSP Evaluator Passed'); } } else { process.exit(1); }\"",
+    "audit:deps": "npm audit --audit-level=moderate"
+  },
+  "devDependencies": {
+    "csp_evaluator": "^1.1.1"
+  }
+}
