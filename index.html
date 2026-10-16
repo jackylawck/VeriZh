@@ -1,30 +1,64 @@
 <!DOCTYPE html>
-<html lang="zh-HK" class="light">
+<html lang="zh-HK" prefix="og: https://ogp.me/ns#" class="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>字準 VeriZh | 本地運算繁簡轉換與詞彙核對</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
   
-  <!-- 
-    CSP 嚴格合規宣告 (通過 Google CSP Evaluator 驗證) 
-    注意：frame-ancestors 已移除，因其在 meta 中無效。點擊劫持防護需由伺服器 HTTP Header 處理。
-  -->
-  <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'none'; 
-                 script-src 'self' 'strict-dynamic' 'sha256-DUMMY_HASH_REPLACE_ME_AT_BUILD'; 
-                 style-src 'self' 'unsafe-inline'; 
-                 img-src 'self' data:; 
-                 manifest-src 'self'; 
-                 worker-src 'self'; 
-                 connect-src 'none'; 
-                 base-uri 'none'; 
-                 form-action 'none';">
+  <!-- 🔍 基礎 SEO 核心標籤與 Google 驗證 -->
+  <title>字準 VeriZh | 本地運算繁簡轉換與地區詞彙核對</title>
+  <meta name="description" content="字準 VeriZh 是一款隱私優先的純前端繁簡轉換工具。支援香港繁體、台灣正體與大陸簡體的三地詞彙精準對接，零資料外洩，符合企業級資安合規標準。">
+  <meta name="keywords" content="繁簡轉換, 地區詞彙, 香港繁體, 台灣正體, 字準, VeriZh, Privacy-by-Design, 本地運算, PWA, 資訊安全, OpenCC">
+  <meta name="author" content="Jacky Law">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://jackylawck.github.io/VeriZh/">
+  <meta name="google-site-verification" content="JZ5UohX-CcP_fQV0_DI9VadkKY4ZoTTkUifL88-fIcY" />
 
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <!-- 🌐 Open Graph / Facebook / LinkedIn 社交卡片 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jackylawck.github.io/VeriZh/">
+  <meta property="og:title" content="字準 VeriZh | 隱私優先的企業級繁簡轉換工具">
+  <meta property="og:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
+  <meta property="og:image" content="https://jackylawck.github.io/VeriZh/assets/VeriZh512icon.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="字準 VeriZh 品牌標誌">
+  <meta property="og:locale" content="zh_HK">
+  <meta property="og:site_name" content="字準 VeriZh">
+
+  <!-- 🐦 Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="字準 VeriZh | 企業級繁簡轉換工具">
+  <meta name="twitter:description" content="100% 本地運算，零資料外洩。精準處理三地詞彙與語境，為企業法務與文案提供最高級別的轉換保障。">
+  <meta name="twitter:image" content="https://jackylawck.github.io/VeriZh/assets/VeriZh512icon.png">
+
+  <!-- 📱 PWA 與行動裝置設定 (Add to Home Screen 支援) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="字準 VeriZh">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
-  
+  <meta name="application-name" content="字準 VeriZh">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./assets/VeriZh192icon.png">
+
+  <!-- 🛡️ 企業級安全策略：Content Security Policy (CSP) 與權限隔離 -->
+  <!-- 保持極致嚴格，不允許任何外部連線 (connect-src 'none') -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none'; 
+    script-src 'self' 'unsafe-inline'; 
+    style-src 'self' 'unsafe-inline'; 
+    img-src 'self' data:; 
+    manifest-src 'self'; 
+    worker-src 'self'; 
+    connect-src 'none'; 
+    base-uri 'none'; 
+    form-action 'none';
+  ">
+  <!-- 嚴格權限隔離：關閉所有不必要的手機硬體權限 -->
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
   <style>
     /* 現代 Linear/Notion 風格極簡 UI */
     :root {
@@ -34,6 +68,7 @@
       --text-secondary: #666666;
       --border-color: #e5e5e5;
       --accent-color: #0066ff;
+      --install-bg: #e6f0ff;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -43,6 +78,7 @@
         --text-secondary: #a0a0a0;
         --border-color: #333333;
         --accent-color: #3388ff;
+        --install-bg: #1a2b4c;
       }
     }
     body {
@@ -51,10 +87,20 @@
       background-color: var(--bg-color); color: var(--text-primary);
       display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
     }
-    header { margin-bottom: 2rem; }
-    h1 { font-size: 1.5rem; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
+    header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header-text h1 { font-size: 1.5rem; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
     .subtitle { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem; }
     
+    /* PWA 安裝按鈕 */
+    #installBtn {
+      display: none; /* 預設隱藏，符合安裝條件時透過 JS 顯示 */
+      background: var(--install-bg); color: var(--accent-color);
+      border: 1px solid var(--accent-color); padding: 0.5rem 1rem;
+      border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    #installBtn:hover { background: var(--accent-color); color: white; }
+
     .workspace { display: flex; gap: 1.5rem; flex: 1; min-height: 0; }
     .panel { 
       flex: 1; display: flex; flex-direction: column; 
@@ -71,7 +117,7 @@
       background: transparent; color: inherit; font-family: inherit; font-size: 1rem;
       line-height: 1.6; outline: none; box-sizing: border-box;
     }
-    .controls { margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; }
+    .controls { margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; }
     select, button {
       padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 6px;
       border: 1px solid var(--border-color); background: var(--surface-color); color: inherit;
@@ -82,20 +128,25 @@
     @media (max-width: 768px) {
       .workspace { flex-direction: column; }
       body { padding: 1rem; }
+      header { flex-direction: column; gap: 1rem; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>VeriZh 字準</h1>
-    <div class="subtitle">本地運算、隱私優先、可審計的文字校對工具</div>
+    <div class="header-text">
+      <h1>VeriZh 字準</h1>
+      <div class="subtitle">本地運算、隱私優先、可審計的文字校對工具</div>
+    </div>
+    <!-- 讓使用者一鍵加入手機畫面的按鈕 -->
+    <button id="installBtn">📲 加到手機主畫面</button>
   </header>
 
   <div class="controls">
     <select id="conversionMode" aria-label="選擇轉換模式">
       <option value="s2hk">簡體 ➔ 香港繁體 (附地區詞彙)</option>
-      <option value="hk2s">香港繁體 ➔ 簡體 (附地區詞彙)</option>
+      <option value="hk2s">香港繁體 ➔ 簡體</option>
       <option value="s2twp">簡體 ➔ 台灣正體 (附地區詞彙)</option>
       <option value="tw2sp">台灣正體 ➔ 簡體 (附地區詞彙)</option>
     </select>
