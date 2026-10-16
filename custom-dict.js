@@ -41,9 +41,9 @@ function restoreTerms(text, map, dict = {}) {
     restored = restored.split(token).join(targetTerm);
   }
   
-  // 2. 反轉義：還原用戶原始的私用區字元
+  // 2. 反轉義：還原用戶原始的私用區字元 (修復貪婪匹配漏洞，精確匹配 4 位 16 進位)
   restored = restored.replace(
-    new RegExp(`${PUA_ESCAPE_PREFIX}([0-9a-fA-F]+)`, 'g'),
+    new RegExp(`${PUA_ESCAPE_PREFIX}([0-9a-fA-F]{4})`, 'g'),
     (_, hex) => String.fromCharCode(parseInt(hex, 16))
   );
   
