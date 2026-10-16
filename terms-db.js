@@ -1,4 +1,4 @@
-// dict-store.js
+// terms-db.js
 const DB_NAME = 'VeriZh_Terminology';
 const DB_VERSION = 2; 
 const STORE_NAME = 'terms';
