@@ -1,19 +1,20 @@
 {
-  "name": "字準 VeriZh",
+  "name": "VeriZh 字準",
   "short_name": "VeriZh",
-  "description": "本地運算、隱私優先、可審計的三地中文轉換工具",
+  "description": "本地運算、隱私優先、可審計的文字校對工具",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0066ff",
   "icons": [
     {
-      "src": "assets/icon-192.png",
+      "src": "./VeriZh192icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "./VeriZh512icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
