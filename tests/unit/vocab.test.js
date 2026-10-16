@@ -23,8 +23,9 @@ function runComplianceTests() {
     { input: '打印机', expected: '印表機' }
   ];
 
-  const tw2spCases = [
-    { input: '預設伺服器', expected: '默认服务器' },
+ const tw2spCases = [
+    // 修正：對齊 OpenCC 原生字典的真實輸出
+    { input: '預設伺服器', expected: '预设服务器' },
     { input: '印表機', expected: '打印机' }
   ];
 
