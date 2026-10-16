@@ -13,7 +13,7 @@ onmessage = function(e) {
         's2hk': { from: 'cn', to: 'hk' },
         'hk2s': { from: 'hk', to: 'cn' },
         's2twp': { from: 'cn', to: 'twp' },
-        'tw2sp': { from: 'tw', to: 'cn' } // 修正 API 配置
+        'tw2sp': { from: 'twp', to: 'cn' } // 修正：還原 twp 來源，啟用詞彙轉換
       };
       
       const config = fromToMap[mode];
