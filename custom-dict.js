@@ -1,24 +1,25 @@
 // custom-dict.js
 
-// 精簡後的企業專屬保護層 (專注於 OpenCC 無法處理的語境詞與專有名稱)
-const customHkDictS2HK = {
-  '海内存知己': '海內存知己',
-  '香港特别行政区房屋委员会': '香港特別行政區房屋委員會',
-  '数字脱敏': '數據脫敏' // 範例：OpenCC 未涵蓋的現代 IT 企業術語
-};
-
-const PUA_ESCAPE_PREFIX = '\uE000\uE002';
-const makeToken = (index) => `\uE000${index}\uE001`;
+// 命名空間完全隔離
+const TOKEN_OPEN = '\uE000';
+const TOKEN_CLOSE = '\uE001';
+const ESCAPE_PREFIX = '\uE002\uE003';
+const makeToken = (index) => `${TOKEN_OPEN}${index}${TOKEN_CLOSE}`;
 
 function protectTerms(text, terms) {
-  const sorted = [...terms].sort((a, b) => b.length - a.length);
+  const validTerms = [...new Set(terms)].filter(t => typeof t === 'string' && t.length > 0);
+  const sorted = validTerms.sort((a, b) => b.length - a.length);
   const map = new Map();
   let protectedText = text;
+  let escapeCount = 0; // 引入計數器
   
-  // 1. 碰撞防禦：轉義用戶原始輸入中的私用區字元
+  // 1. 碰撞防禦：轉義用戶原始輸入中的私用區字元並計數
   protectedText = protectedText.replace(
     /[\uE000-\uF8FF]/g,
-    (char) => `${PUA_ESCAPE_PREFIX}${char.charCodeAt(0).toString(16)}`
+    (char) => {
+      escapeCount++;
+      return `${ESCAPE_PREFIX}${char.charCodeAt(0).toString(16)}`;
+    }
   );
   
   // 2. 佔位符保護
@@ -29,38 +30,53 @@ function protectTerms(text, terms) {
       map.set(token, term);
     }
   }
-  return { protectedText, map };
+  
+  // 將計數器隨同保護結果一併輸出
+  return { protectedText, map, escapeCount };
 }
 
-function restoreTerms(text, map, dict = {}) {
+function restoreTerms(text, map, dict = {}, escapeCount = 0) {
+  const safeDict = (dict && typeof dict === 'object') ? dict : {};
   let restored = text;
   
   // 1. 還原佔位符為目標詞彙
   for (const [token, originalTerm] of map) {
-    const targetTerm = dict[originalTerm] || originalTerm;
+    const targetTerm = safeDict[originalTerm] || originalTerm;
     restored = restored.split(token).join(targetTerm);
   }
   
-  // 2. 反轉義：還原用戶原始的私用區字元 (修復貪婪匹配漏洞，精確匹配 4 位 16 進位)
+  // 2. 佔位符殘留檢測 (在反轉義前執行，僅針對 Token 格式)
+  const tokenRegex = new RegExp(`${TOKEN_OPEN}\\d+${TOKEN_CLOSE}`);
+  if (tokenRegex.test(restored)) {
+    console.warn('⚠️ 警告：部分佔位符還原失敗，系統防護層可能發生異常。');
+  }
+  
+  // 3. 反轉義並統計次數
+  let unescapeCount = 0;
   restored = restored.replace(
-    new RegExp(`${PUA_ESCAPE_PREFIX}([0-9a-fA-F]{4})`, 'g'),
-    (_, hex) => String.fromCharCode(parseInt(hex, 16))
+    new RegExp(`${ESCAPE_PREFIX}([0-9a-fA-F]{4})`, 'g'),
+    (_, hex) => {
+      unescapeCount++;
+      return String.fromCharCode(parseInt(hex, 16));
+    }
   );
   
-  // 3. 安全回退檢測：精確檢測是否殘留系統生成的 Token 或轉義前綴
-  if (/\uE000\d+\uE001/.test(restored) || restored.includes(PUA_ESCAPE_PREFIX)) {
-    console.warn('⚠️ 警告：部分佔位符還原或反轉義失敗，系統防護層可能發生異常。');
+  // 4. 狀態比對檢測：確保進出的 PUA 字元數量絕對一致
+  if (unescapeCount !== escapeCount) {
+    console.warn(`⚠️ 警告：轉義計數不一致 (預期 ${escapeCount}，實際 ${unescapeCount})，部分私用區字元可能在轉換過程中丟失。`);
   }
   
   return restored;
 }
 
-function applyProtectionAndConversion(text, mode, converter) {
-  if (mode === 's2hk') {
-    const protectionList = Object.keys(customHkDictS2HK);
-    const { protectedText, map } = protectTerms(text, protectionList);
+function applyProtectionAndConversion(text, mode, converter, dictCache = {}) {
+  if (mode === 's2hk' && dictCache && Object.keys(dictCache).length > 0) {
+    const protectionList = Object.keys(dictCache);
+    // 同步呼叫鏈：接收 escapeCount
+    const { protectedText, map, escapeCount } = protectTerms(text, protectionList);
     const convertedText = converter(protectedText);
-    return restoreTerms(convertedText, map, customHkDictS2HK);
+    // 同步呼叫鏈：傳遞 escapeCount 供還原函數校驗
+    return restoreTerms(convertedText, map, dictCache, escapeCount);
   }
   return converter(text);
 }
