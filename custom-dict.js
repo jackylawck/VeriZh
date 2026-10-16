@@ -11,7 +11,7 @@ function protectTerms(text, terms) {
   const sorted = validTerms.sort((a, b) => b.length - a.length);
   const map = new Map();
   let protectedText = text;
-  let escapeCount = 0; // 引入計數器
+  let escapeCount = 0;
   
   // 1. 碰撞防禦：轉義用戶原始輸入中的私用區字元並計數
   protectedText = protectedText.replace(
@@ -31,7 +31,6 @@ function protectTerms(text, terms) {
     }
   }
   
-  // 將計數器隨同保護結果一併輸出
   return { protectedText, map, escapeCount };
 }
 
@@ -70,17 +69,20 @@ function restoreTerms(text, map, dict = {}, escapeCount = 0) {
 }
 
 function applyProtectionAndConversion(text, mode, converter, dictCache = {}) {
+  // 嚴格限定於 s2hk 模式，避免香港詞典污染台灣用語
   if (mode === 's2hk' && dictCache && Object.keys(dictCache).length > 0) {
     const protectionList = Object.keys(dictCache);
-    // 同步呼叫鏈：接收 escapeCount
     const { protectedText, map, escapeCount } = protectTerms(text, protectionList);
     const convertedText = converter(protectedText);
-    // 同步呼叫鏈：傳遞 escapeCount 供還原函數校驗
     return restoreTerms(convertedText, map, dictCache, escapeCount);
   }
   return converter(text);
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { applyProtectionAndConversion };
+  module.exports = { 
+    applyProtectionAndConversion, 
+    protectTerms, 
+    restoreTerms 
+  };
 }
