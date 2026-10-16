@@ -1,17 +1,17 @@
+cat << 'EOF' > manifest.json
 {
   "name": "VeriZh 字準",
   "short_name": "VeriZh",
-  "description": "本地運算、隱私優先、可審計的文字校對工具",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0066ff",
+  "description": "本地運算、隱私優先、可審計的文字校對工具",
   "icons": [
     {
       "src": "./VeriZh192icon.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./VeriZh512icon.png",
@@ -20,3 +20,4 @@
     }
   ]
 }
+EOF
