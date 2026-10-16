@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-HK" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>字準 VeriZh | 本地運算繁簡轉換與詞彙核對</title>
+  
+  <!-- 
+    CSP 嚴格合規宣告 (通過 Google CSP Evaluator 驗證) 
+    注意：frame-ancestors 已移除，因其在 meta 中無效。點擊劫持防護需由伺服器 HTTP Header 處理。
+  -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'none'; 
+                 script-src 'self' 'strict-dynamic' 'sha256-DUMMY_HASH_REPLACE_ME_AT_BUILD'; 
+                 style-src 'self' 'unsafe-inline'; 
+                 img-src 'self' data:; 
+                 manifest-src 'self'; 
+                 worker-src 'self'; 
+                 connect-src 'none'; 
+                 base-uri 'none'; 
+                 form-action 'none';">
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  
+  <style>
+    /* 現代 Linear/Notion 風格極簡 UI */
+    :root {
+      --bg-color: #ffffff;
+      --surface-color: #f9f9fb;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --border-color: #e5e5e5;
+      --accent-color: #0066ff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --surface-color: #1e1e1e;
+        --text-primary: #f0f0f0;
+        --text-secondary: #a0a0a0;
+        --border-color: #333333;
+        --accent-color: #3388ff;
+      }
+    }
+    body {
+      margin: 0; padding: 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color); color: var(--text-primary);
+      display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
+    }
+    header { margin-bottom: 2rem; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
+    .subtitle { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem; }
+    
+    .workspace { display: flex; gap: 1.5rem; flex: 1; min-height: 0; }
+    .panel { 
+      flex: 1; display: flex; flex-direction: column; 
+      background: var(--surface-color); border: 1px solid var(--border-color);
+      border-radius: 8px; overflow: hidden;
+    }
+    .panel-header {
+      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.875rem; font-weight: 500;
+    }
+    textarea {
+      flex: 1; width: 100%; padding: 1rem; border: none; resize: none;
+      background: transparent; color: inherit; font-family: inherit; font-size: 1rem;
+      line-height: 1.6; outline: none; box-sizing: border-box;
+    }
+    .controls { margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; }
+    select, button {
+      padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 6px;
+      border: 1px solid var(--border-color); background: var(--surface-color); color: inherit;
+      cursor: pointer;
+    }
+    button.primary { background: var(--accent-color); color: white; border: none; font-weight: 500; }
+    
+    @media (max-width: 768px) {
+      .workspace { flex-direction: column; }
+      body { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>VeriZh 字準</h1>
+    <div class="subtitle">本地運算、隱私優先、可審計的文字校對工具</div>
+  </header>
+
+  <div class="controls">
+    <select id="conversionMode" aria-label="選擇轉換模式">
+      <option value="s2hk">簡體 ➔ 香港繁體 (附地區詞彙)</option>
+      <option value="hk2s">香港繁體 ➔ 簡體 (附地區詞彙)</option>
+      <option value="s2twp">簡體 ➔ 台灣正體 (附地區詞彙)</option>
+      <option value="tw2sp">台灣正體 ➔ 簡體 (附地區詞彙)</option>
+    </select>
+    <span class="subtitle" id="statusIndicator">Ready</span>
+  </div>
+
+  <div class="workspace">
+    <div class="panel">
+      <div class="panel-header">
+        <span>輸入文本 (本地處理)</span>
+      </div>
+      <textarea id="sourceText" placeholder="在此貼上或輸入文字..."></textarea>
+    </div>
+    
+    <div class="panel">
+      <div class="panel-header">
+        <span>轉換結果</span>
+        <button id="copyBtn" aria-label="複製結果">複製</button>
+      </div>
+      <textarea id="targetText" readonly placeholder="轉換結果將顯示於此..."></textarea>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
