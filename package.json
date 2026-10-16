@@ -1,19 +1,37 @@
 {
   "name": "verizh",
   "version": "1.0.0",
-  "description": "字準 VeriZh - 本地運算、隱私優先、可審計的三地中文轉換工具",
-"scripts": {
-    "setup": "mkdir -p assets/js && cp node_modules/opencc-js/dist/umd/full.js assets/js/opencc.js",
-    "postinstall": "npm run setup",
-    "test:unit": "node tests/unit/vocab.test.js",
+  "description": "本地運算、隱私優先、可審計的文字校對工具",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "http-server . -p 8080 -c-1",
+    "serve": "http-server . -p 8080",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "audit:csp": "node scripts/audit-csp.js",
-    "audit:deps": "npm audit --audit-level=moderate",
-    "test": "npm run audit:csp && npm run test:unit"
+    "audit:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {
-    "opencc-js": "^1.0.5"
+    "opencc-js": "^1.4.2"
   },
   "devDependencies": {
-    "csp_evaluator": "^1.1.1"
+    "csp_evaluator": "^1.1.8",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  },
+  "author": "Jacky Law",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackylawck/VeriZh.git"
   }
 }
