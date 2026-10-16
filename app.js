@@ -12,12 +12,10 @@ window.addEventListener('drop', (e) => e.preventDefault());
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then((registration) => {
-      // 監聽新版本安裝
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // 已有舊版控制中，且新版已安裝完成
             if (confirm('發現新版本，是否立即重新載入？')) {
               newWorker.postMessage({ type: 'SKIP_WAITING' });
               window.location.reload();
@@ -42,14 +40,13 @@ const warningBanner = document.getElementById('warningBanner');
 const copyBtn = document.getElementById('copyBtn');
 const installBtn = document.getElementById('installBtn');
 
-// 無障礙屬性（若 HTML 尚未設定，此處補上）
 statusIndicator.setAttribute('aria-live', 'polite');
 statusIndicator.setAttribute('role', 'status');
 warningBanner.setAttribute('role', 'alert');
 warningBanner.setAttribute('aria-live', 'assertive');
 sourceText.setAttribute('aria-label', '輸入要轉換的文字');
 targetText.setAttribute('aria-label', '轉換結果');
-targetText.readOnly = true; // 輸出結果唯讀，防止誤改
+targetText.readOnly = true;
 
 // ============================================================
 // 3. 實例化 Web Worker 與初始化狀態鎖
@@ -60,24 +57,28 @@ sourceText.disabled = true;
 statusIndicator.textContent = '⏳ 載入企業術語庫中...';
 
 let debounceTimer;
-let isComposing = false; // 輸入法組字狀態鎖
-let requestId = 0;       // 請求計數器
-let latestRequestId = 0; // 最新發出的請求 ID（解決競態）
+let isComposing = false;
+let requestId = 0;
+let latestRequestId = 0;
 
 // ============================================================
 // 4. Worker 訊息與錯誤處理
 // ============================================================
 converterWorker.onmessage = function (e) {
-  const { status, result, error, warnings, termCount, requestId: responseId } = e.data;
+  const { status, result, error, warnings, warning, termCount, requestId: responseId } = e.data;
 
-  // 初始化就緒
   if (status === 'ready') {
     statusIndicator.textContent = `✅ 系統就緒 (已掛載 ${termCount} 條企業術語)`;
     sourceText.disabled = false;
+    
+    if (warning) {
+      warningBanner.textContent = `⚠️ 系統提示：${warning}`;
+      warningBanner.style.display = 'block';
+    }
     return;
   }
 
-  // 丟棄過期的非同步請求結果（防範請求競態）
+  // 防範請求競態
   if (responseId !== undefined && responseId !== latestRequestId) {
     return;
   }
@@ -106,9 +107,9 @@ converterWorker.onerror = function (error) {
 };
 
 // ============================================================
-// 5. 觸發轉換邏輯（自適應防抖 + 請求標籤）
+// 5. 觸發轉換邏輯（支援立即觸發與自適應防抖）
 // ============================================================
-function triggerConversion() {
+function triggerConversion(immediate = false) {
   clearTimeout(debounceTimer);
 
   const text = sourceText.value;
@@ -121,50 +122,51 @@ function triggerConversion() {
     return;
   }
 
-  // 自適應防抖：文本越長，等待越久，避免頻繁發送巨大 payload
-  const debounceTime = Math.min(300 + text.length / 200, 800);
-
-  debounceTimer = setTimeout(() => {
+  const doConvert = () => {
     const currentId = ++requestId;
     latestRequestId = currentId;
     statusIndicator.textContent = '⏳ 運算中...';
     converterWorker.postMessage({ text, mode, requestId: currentId });
-  }, debounceTime);
+  };
+
+  if (immediate) {
+    doConvert();
+  } else {
+    const debounceTime = Math.min(300 + text.length / 200, 800);
+    debounceTimer = setTimeout(doConvert, debounceTime);
+  }
 }
 
 // ============================================================
-// 6. 事件監聽（支援中文輸入法組字防抖）
+// 6. 事件監聽（組字鎖與快捷鍵）
 // ============================================================
 sourceText.addEventListener('compositionstart', () => { isComposing = true; });
 sourceText.addEventListener('compositionend', () => {
   isComposing = false;
-  triggerConversion(); // 組字完成後才觸發
+  triggerConversion();
 });
 sourceText.addEventListener('input', () => {
   if (!isComposing) triggerConversion();
 });
-modeSelect.addEventListener('change', triggerConversion);
+modeSelect.addEventListener('change', () => triggerConversion(true)); // 切換模式時也應立即轉換
 
-// 鍵盤快捷鍵：Ctrl/Cmd + Enter 立即轉換（跳過防抖）
 sourceText.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
-    clearTimeout(debounceTimer);
-    triggerConversion();
+    triggerConversion(true); // 真正跳過防抖，即刻發車
   }
 });
 
 // ============================================================
-// 7. 剪貼簿複製（含降級相容方案與獨立按鈕提示）
+// 7. 剪貼簿複製
 // ============================================================
 async function copyToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
     try {
       await navigator.clipboard.writeText(text);
       return true;
-    } catch (e) { /* fall through to fallback */ }
+    } catch (e) { /* fall through */ }
   }
-  // 降級方案（http:// 或舊版瀏覽器）
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.style.position = 'fixed';
@@ -214,7 +216,6 @@ if (installBtn) {
   });
 }
 
-// 偵測是否透過瀏覽器選單直接安裝
 window.addEventListener('appinstalled', () => {
   if (installBtn) installBtn.style.display = 'none';
   deferredPrompt = null;
@@ -222,7 +223,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 // ============================================================
-// 9. 拖曳檔案匯入（支援 .txt / .md / .csv 等純文字檔，含大小限制）
+// 9. 拖曳檔案匯入
 // ============================================================
 const originalBorder = sourceText.style.border;
 
@@ -243,13 +244,11 @@ sourceText.addEventListener('drop', (e) => {
   const file = e.dataTransfer.files[0];
   if (!file) return;
 
-  // 檔案大小限制（5MB）
   if (file.size > 5 * 1024 * 1024) {
     alert('檔案過大，請匯入小於 5MB 的純文字檔。');
     return;
   }
 
-  // 類型驗證：MIME type 或副檔名
   const isValidType = file.type.startsWith('text/') ||
                       /\.(txt|md|csv|json|log)$/i.test(file.name);
   if (!isValidType) {
@@ -260,7 +259,7 @@ sourceText.addEventListener('drop', (e) => {
   const reader = new FileReader();
   reader.onload = (event) => {
     sourceText.value = event.target.result;
-    triggerConversion();
+    triggerConversion(); // 讀取完畢後走一般防抖管線即可
   };
   reader.readAsText(file);
 });
