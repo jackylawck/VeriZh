@@ -8,7 +8,8 @@ function runComplianceTests() {
   
   const converterS2HK = OpenCC.Converter({ from: 'cn', to: 'hk' });
   const converterS2TW = OpenCC.Converter({ from: 'cn', to: 'twp' });
-  const converterTW2SP = OpenCC.Converter({ from: 'tw', to: 'cn' });
+  // 修正：將 from 參數改回 'twp'，以啟用台灣正體地區詞彙的還原轉換
+  const converterTW2SP = OpenCC.Converter({ from: 'twp', to: 'cn' });
 
   const hkCases = [
     { input: '默认服务器', expected: '默認服務器' }, // 驗證：OpenCC 原生處理，不依賴自訂詞庫
