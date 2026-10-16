@@ -7,18 +7,26 @@ window.addEventListener('dragover', (e) => e.preventDefault());
 window.addEventListener('drop', (e) => e.preventDefault());
 
 // ============================================================
-// 1. 註冊 Service Worker（含更新提示）
+// 1. 註冊 Service Worker（含完美時序的更新提示）
 // ============================================================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then((registration) => {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
+        let isUpdatePromptShown = false; // 💡 防重複觸發鎖
+
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !isUpdatePromptShown) {
+            isUpdatePromptShown = true; // 鎖定，避免多次觸發彈窗
+            
             if (confirm('發現新版本，是否立即重新載入？')) {
               newWorker.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
+              
+              // 💡 嚴格時序：等新版 SW 確定接管後，才執行 reload
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+              }, { once: true }); // 確保只觸發一次
             }
           }
         });
