@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "字準 VeriZh - 本地運算、隱私優先、可審計的三地中文轉換工具",
 "scripts": {
-    "setup": "mkdir -p assets/js && cp node_modules/opencc-js/dist/umd/opencc.js assets/js/opencc.js",
+    "setup": "mkdir -p assets/js && cp node_modules/opencc-js/dist/opencc.js assets/js/opencc.js",
     "postinstall": "npm run setup",
     "test:unit": "node tests/unit/vocab.test.js",
     "audit:csp": "node scripts/audit-csp.js",
