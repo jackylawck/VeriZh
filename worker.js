@@ -3,9 +3,8 @@
 let scriptsLoaded = true;
 
 try {
-  importScripts('./assets/js/opencc.js');
-  importScripts('./dict-store.js');
-  importScripts('./custom-dict.js');
+  // 合併載入核心腳本，確保依賴項依序解析
+  importScripts('./assets/js/opencc.js', './dict-store.js', './custom-dict.js');
   
   if (typeof OpenCC === 'undefined' || typeof TerminologyStore === 'undefined' || typeof applyProtectionAndConversion === 'undefined') {
     scriptsLoaded = false;
@@ -35,7 +34,7 @@ async function initializeWorker() {
       's2hk': { from: 'cn', to: 'hk' },
       'hk2s': { from: 'hk', to: 'cn' },
       's2twp': { from: 'cn', to: 'twp' },
-      'tw2sp': { from: 'tw', to: 'cn' } 
+      'tw2sp': { from: 'twp', to: 'cn' } // 修正：使用 twp 確保台灣詞彙正確認識並反向轉對譯簡體
     };
     for (const [m, config] of Object.entries(fromToMap)) {
       converterCache.set(m, OpenCC.Converter(config));
