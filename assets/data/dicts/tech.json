@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "version": 3,
+    "version": 4,
     "priority": 10,
     "domain": "tech",
     "lastUpdated": "2026-10-17",
@@ -10,14 +10,28 @@
     "target": "伺服器",
     "level": "L2",
     "status": "AutoReplace",
-    "note": "參考 OGCIO 資訊科技辭彙",
+    "note": "Server",
     "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
   },
   "数据库": {
     "target": "資料庫",
     "level": "L2",
     "status": "AutoReplace",
-    "note": "參考 OGCIO 資訊科技辭彙",
+    "note": "Database",
+    "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
+  },
+  "默认": {
+    "target": "預設",
+    "level": "L2",
+    "status": "AutoReplace",
+    "note": "Default",
+    "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
+  },
+  "程序": {
+    "target": "程式",
+    "level": "L2",
+    "status": "Approved",
+    "note": "Program 概念。若指 Process/Procedure 則仍為程序，故不設為 AutoReplace",
     "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
   }
 }
