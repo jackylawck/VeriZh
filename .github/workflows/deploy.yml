@@ -60,7 +60,8 @@ jobs:
       - name: 準備乾淨的發布資料夾 (排除 node_modules)
         run: |
           mkdir deploy_dist
-          cp index.html app.js worker.js sw.js manifest.json deploy_dist/
+          # 補齊所有核心依賴腳本與 PWA 圖示檔
+          cp index.html app.js worker.js sw.js terms-db.js custom-dict.js manifest.json *.png deploy_dist/
           cp -r assets deploy_dist/
           # 建立 .nojekyll 檔案，防止 GitHub Pages 忽略底線開頭的隱藏檔案
           touch deploy_dist/.nojekyll
