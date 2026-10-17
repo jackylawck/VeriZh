@@ -1,6 +1,6 @@
 // terms-db.js
 const DB_NAME = 'VeriZh_Terminology';
-const DB_VERSION = 2; 
+const DB_VERSION = 3; // 💡 升級到 v3，觸發自動重建，徹底消滅髒資料
 const STORE_NAME = 'terms';
 const META_STORE = 'metadata';
 
@@ -14,10 +14,13 @@ class TerminologyStore {
         reject(new Error('DB_BLOCKED'));
       };
 
+      // 💡 版本升級時，自動刪除舊表並重建乾淨的結構
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: 'source' });
-        if (!db.objectStoreNames.contains(META_STORE)) db.createObjectStore(META_STORE, { keyPath: 'key' });
+        if (db.objectStoreNames.contains(STORE_NAME)) db.deleteObjectStore(STORE_NAME);
+        if (db.objectStoreNames.contains(META_STORE)) db.deleteObjectStore(META_STORE);
+        db.createObjectStore(STORE_NAME, { keyPath: 'source' });
+        db.createObjectStore(META_STORE, { keyPath: 'key' });
       };
 
       request.onsuccess = (event) => {
@@ -63,21 +66,30 @@ class TerminologyStore {
       
       store.clear();
       
-      for (const [source, record] of Object.entries(data)) {
-        if (source === '_metadata') continue;
+      for (const [keyword, record] of Object.entries(data)) {
+        if (keyword === '_metadata') continue;
         
-        // 💡 嚴格防禦：確保 source 是有效字串，且 record 是物件
-        if (typeof source !== 'string' || !source.trim() || typeof record !== 'object' || record === null) {
-          console.warn(`跳過無效的詞條: ${source}`, record);
+        // 確保來源字串與紀錄格式合法
+        if (typeof keyword !== 'string' || !keyword.trim() || typeof record !== 'object' || record === null) {
           continue;
         }
 
         try {
-          // 強制將 source 寫入物件中，確保 IDB 的 keyPath 絕對能找到它
-          store.put({ ...record, source: source.trim() });
+          // 💡 核心修復：解決屬性名稱衝突！
+          // 將 JSON 裡的 record.source (文獻) 重新命名為 reference
+          // 確保 IDB 的主鍵 (source) 永遠是單純的字串
+          const itemToPut = {
+            source: keyword.trim(),       // 關鍵字 (IDB Primary Key)
+            target: record.target,        // 替換目標
+            level: record.level,          // 級別
+            status: record.status,        // 狀態
+            note: record.note,            // 備註
+            reference: record.source      // 避開衝突，改名為 reference
+          };
+
+          store.put(itemToPut);
         } catch (e) {
-          console.error(`寫入詞條失敗 [${source}]:`, e);
-          // 不中斷整個迴圈，讓好的資料繼續寫入
+          console.error(`寫入詞條失敗 [${keyword}]:`, e);
         }
       }
       
@@ -93,7 +105,6 @@ class TerminologyStore {
       let combinedVersion = 0;
       const fetchedDicts = [];
 
-      // 1. 並行抓取所有詞庫模組
       const responses = await Promise.allSettled(urlList.map(url => fetch(url)));
       for (const result of responses) {
         if (result.status === 'fulfilled' && result.value.ok) {
@@ -113,20 +124,17 @@ class TerminologyStore {
         return;
       }
 
-      // 2. 依照 priority 升序排序 (確保高權重模組最後合併，覆寫低權重)
       fetchedDicts.sort((a, b) => {
         const pA = a._metadata?.priority || 0;
         const pB = b._metadata?.priority || 0;
         return pA - pB;
       });
 
-      // 3. 執行合併與總雜湊版本號計算
       let mergedData = {};
       for (const data of fetchedDicts) {
         if (data._metadata?.version) combinedVersion += data._metadata.version;
         for (const [source, record] of Object.entries(data)) {
           if (source !== '_metadata') {
-            // 深拷貝，避免參照污染
             mergedData[source] = JSON.parse(JSON.stringify(record));
           }
         }
