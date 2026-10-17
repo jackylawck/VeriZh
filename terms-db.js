@@ -65,7 +65,20 @@ class TerminologyStore {
       
       for (const [source, record] of Object.entries(data)) {
         if (source === '_metadata') continue;
-        store.put({ source, ...record });
+        
+        // 💡 嚴格防禦：確保 source 是有效字串，且 record 是物件
+        if (typeof source !== 'string' || !source.trim() || typeof record !== 'object' || record === null) {
+          console.warn(`跳過無效的詞條: ${source}`, record);
+          continue;
+        }
+
+        try {
+          // 強制將 source 寫入物件中，確保 IDB 的 keyPath 絕對能找到它
+          store.put({ ...record, source: source.trim() });
+        } catch (e) {
+          console.error(`寫入詞條失敗 [${source}]:`, e);
+          // 不中斷整個迴圈，讓好的資料繼續寫入
+        }
       }
       
       transaction.oncomplete = () => resolve();
@@ -74,7 +87,6 @@ class TerminologyStore {
     });
   }
 
-  // 💡 核心升級：支援多模組 JSON 並行載入與 Priority 權重合併
   async syncDictionaries(urlList) {
     this._ensureDB();
     try {
@@ -85,9 +97,13 @@ class TerminologyStore {
       const responses = await Promise.allSettled(urlList.map(url => fetch(url)));
       for (const result of responses) {
         if (result.status === 'fulfilled' && result.value.ok) {
-          const data = await result.value.json();
-          if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
-            fetchedDicts.push(data);
+          try {
+            const data = await result.value.json();
+            if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+              fetchedDicts.push(data);
+            }
+          } catch (jsonErr) {
+             console.error(`無法解析 JSON，跳過檔案: ${result.value.url}`, jsonErr);
           }
         }
       }
@@ -110,7 +126,8 @@ class TerminologyStore {
         if (data._metadata?.version) combinedVersion += data._metadata.version;
         for (const [source, record] of Object.entries(data)) {
           if (source !== '_metadata') {
-            mergedData[source] = record;
+            // 深拷貝，避免參照污染
+            mergedData[source] = JSON.parse(JSON.stringify(record));
           }
         }
       }
