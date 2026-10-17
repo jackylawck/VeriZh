@@ -1,0 +1,30 @@
+{
+  "_metadata": {
+    "version": 2,
+    "priority": 20,
+    "domain": "hr",
+    "lastUpdated": "2026-10-17",
+    "description": "人力資源與勞動規範用語差異"
+  },
+  "劳动合同": {
+    "target": "僱傭合約",
+    "level": "L2",
+    "status": "AutoReplace",
+    "note": "嚴格對齊香港勞工處《僱傭條例》官方用語",
+    "source": { "name": "香港勞工處", "url": "https://www.labour.gov.hk/" }
+  },
+  "五险一金": {
+    "target": "五險一金",
+    "level": "L4",
+    "status": "Draft",
+    "note": "強積金（MPF）為強制性退休儲蓄計劃，不包含醫療、失業、工傷保障；五險一金為大陸社會保險體系，兩者法律概念不對等",
+    "source": { "name": "內部HR指引", "url": "" }
+  },
+  "辞退": {
+    "target": "解僱",
+    "level": "L2",
+    "status": "Approved",
+    "note": "正式勞資用語",
+    "source": { "name": "內部HR指引", "url": "" }
+  }
+}
