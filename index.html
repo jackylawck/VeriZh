@@ -44,8 +44,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./VeriZh192icon.png">
   <link rel="apple-touch-icon" href="./VeriZh192icon.png">
 
-  <!-- 🛡️ 企業級安全策略：嚴格 CSP 規範 -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';">
+ <!-- 🛡️ 企業級安全策略：嚴格 CSP 規範 (已允許動態樣式修改) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';">
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
