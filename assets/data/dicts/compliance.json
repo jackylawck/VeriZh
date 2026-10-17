@@ -1,30 +1,16 @@
 {
   "_metadata": {
-    "version": 2,
+    "version": 4,
     "priority": 30,
     "domain": "compliance",
     "lastUpdated": "2026-10-17",
-    "description": "資安合規與 ISO 稽核專業術語"
-  },
-  "个人信息": {
-    "target": "個人資料",
-    "level": "L1",
-    "status": "AutoReplace",
-    "note": "嚴格對齊香港 PCPD (私隱條例) 官方用語",
-    "source": { "name": "香港個人資料私隱專員公署", "url": "https://www.pcpd.org.hk/" }
-  },
-  "数据脱敏": {
-    "target": "資料去識別化",
-    "level": "L1",
-    "status": "Approved",
-    "note": "ISO/IEC 20889 提供了去識別化技術的分類與術語",
-    "source": { "name": "ISO/IEC 27701:2025 Annex B.1.4.6", "url": "" }
+    "description": "資安合規與國際 ISO 標準術語"
   },
   "审核": {
     "target": "稽核",
     "level": "L2",
     "status": "Approved",
-    "note": "ISO 系統認證標準用語 (Audit)",
+    "note": "對應國際標準 Audit 概念的純用語差異",
     "source": { "name": "ISO 19011", "url": "" }
   }
 }
