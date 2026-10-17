@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "version": 4,
+    "version": 5,
     "priority": 40,
     "domain": "legal",
     "lastUpdated": "2026-10-17",
@@ -10,7 +10,7 @@
     "target": "合約",
     "level": "L1",
     "status": "Approved",
-    "note": "對應 Contract 概念的純商務習慣差異（若特指大陸法規上的《合同法》，系統不應強制替換，故設為 Approved 供判斷）",
+    "note": "對應 Contract 概念的純商務習慣差異。若特指大陸成文法典（如《合同法》），則不應替換。",
     "source": { "name": "法務部指引", "url": "" }
   }
 }
