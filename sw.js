@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'verizh-cache-v12';
+const CACHE_NAME = 'verizh-cache-v15'; // 💡 升級版本號，強制清除舊快取，解決 404 問題
 
 const URLS_TO_CACHE = [
   './',
@@ -7,11 +7,16 @@ const URLS_TO_CACHE = [
   './app.js',
   './worker.js',
   './custom-dict.js',
-  './terms-db.js', // 修正：已替換為新檔名 terms-db.js
+  './terms-db.js',
   './manifest.json',
   './assets/js/opencc.js',
   './assets/css/style.css',
-  './assets/data/lshk-sample.json',
+  // 💡 移除舊的 lshk-sample.json，換成這 5 個全新的核心詞庫
+  './assets/data/dicts/common.json',
+  './assets/data/dicts/hr.json',
+  './assets/data/dicts/compliance.json',
+  './assets/data/dicts/legal.json',
+  './assets/data/dicts/tech.json',
   './VeriZh192icon.png',
   './VeriZh512icon.png'
 ];
