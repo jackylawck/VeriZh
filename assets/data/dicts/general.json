@@ -1,48 +1,44 @@
 {
   "_metadata": {
-    "version": 5,
-    "lastUpdated": "2026-10-16",
-    "description": "VeriZh 企業術語與合規註冊表"
+    "version": 6,
+    "priority": 50,
+    "domain": "general",
+    "lastUpdated": "2026-10-17",
+    "description": "VeriZh 企業術語與合規註冊表（嚴格淨化版）"
   },
   "数字政策局": {
     "target": "數字政策辦公室",
     "level": "L1",
-    "status": "Approved",
-    "note": "2024年7月25日正式成立，由前政府資訊科技總監辦公室（資科辦）及效率促進辦公室（效率辦）合併而成",
+    "status": "Draft",
+    "note": "需語境判斷：若指香港2024年成立之辦公室可替換；若指內地政府實體（如國家數據局等）則嚴禁替換，避免篡改機構名稱",
     "source": { "name": "香港數字政策辦公室", "url": "https://www.digitalpolicy.gov.hk" }
   },
   "个人信息": {
     "target": "個人資料",
     "level": "L1",
-    "status": "AutoReplace",
-    "note": "嚴格對齊香港 PCPD (私隱條例) 官方用語，不可保留內地『個人信息』直譯",
+    "status": "Approved",
+    "note": "需語境判斷：討論香港 PCPD 時替換為個人資料；若討論內地《個人信息保護法》(PIPL) 時不可替換",
     "source": { "name": "香港個人資料私隱專員公署", "url": "https://www.pcpd.org.hk/" }
   },
   "劳动合同": {
     "target": "僱傭合約",
     "level": "L2",
     "status": "Approved",
-    "note": "香港勞工處《僱傭條例》（第57章）標準用語",
+    "note": "需語境判斷：一般商務泛指合約時可替換；若特指內地《勞動合同法》則不可替換",
     "source": { "name": "香港勞工處", "url": "https://www.labour.gov.hk/" }
-  },
-  "五险一金": {
-    "target": "五險一金",
-    "level": "L4",
-    "status": "Draft",
-    "note": "需人資與法務專家確認。不可直接對譯為香港強積金(MPF)"
   },
   "盲流": {
     "target": "未獲授權進境者",
     "level": "L1",
     "status": "Forbidden",
-    "note": "帶有歧視色彩之大陸用語，嚴禁使用。香港法定用語為「未獲授權進境者」（《入境條例》第115章第37A條）",
+    "note": "帶有歧視色彩之用語，嚴禁使用。香港法定用語為「未獲授權進境者」",
     "source": { "name": "香港《入境條例》（第115章）", "url": "https://www.elegislation.gov.hk/" }
   },
   "海内存知己": {
     "target": "海內存知己",
     "level": "NLP-Guard",
-    "status": "Approved",
-    "note": "防禦 mmseg 錯誤切分「内存」為「記憶體」的 NLP 邊界特例"
+    "status": "AutoReplace",
+    "note": "防禦底層 OpenCC 錯誤切分「内存」為「記憶體」的 NLP 邊界特例"
   },
   "文件夹": { 
     "target": "資料夾", 
