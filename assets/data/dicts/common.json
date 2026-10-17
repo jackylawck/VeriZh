@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "version": 4,
+    "version": 5,
     "priority": 10,
     "domain": "common",
     "lastUpdated": "2026-10-17",
@@ -11,13 +11,6 @@
     "level": "L1",
     "status": "Approved",
     "note": "純 Information 概念的語言替換",
-    "source": { "name": "企業通用規範", "url": "" }
-  },
-  "汇报": {
-    "target": "報告",
-    "level": "L1",
-    "status": "Approved",
-    "note": "向上級報告之商務慣用語",
     "source": { "name": "企業通用規範", "url": "" }
   }
 }
