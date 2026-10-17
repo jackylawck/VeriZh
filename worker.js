@@ -4,7 +4,6 @@ let scriptsLoaded = true;
 
 try {
   // 合併載入核心腳本，確保依賴項依序解析
-  // 💡 修正：已將 dict-store.js 替換為 terms-db.js 以繞過快取與廣告阻擋
   importScripts('./assets/js/opencc.js', './terms-db.js', './custom-dict.js');
   
   if (typeof OpenCC === 'undefined' || typeof TerminologyStore === 'undefined' || typeof applyProtectionAndConversion === 'undefined') {
@@ -16,10 +15,12 @@ try {
 }
 
 const converterCache = new Map();
-let hotDictCache = {};     // 存放 Approved, AutoReplace 
+// 💡 修正：拆分快取，以便獨立追蹤 Approved 給 UI 畫虛底線
+let autoReplaceCache = {}; 
+let approvedCache = {};    
 let warningDictCache = {}; // 存放 Draft, Forbidden (直接儲存狀態字串)
 let workerState = 'loading'; 
-let failReason = '';       // 精確區分載入失敗與初始化失敗
+let failReason = '';       
 
 async function initializeWorker() {
   if (!scriptsLoaded) {
@@ -35,7 +36,7 @@ async function initializeWorker() {
       's2hk': { from: 'cn', to: 'hk' },
       'hk2s': { from: 'hk', to: 'cn' },
       's2twp': { from: 'cn', to: 'twp' },
-      'tw2sp': { from: 'twp', to: 'cn' } // 修正：使用 twp 確保台灣詞彙正確認識並反向轉對譯簡體
+      'tw2sp': { from: 'twp', to: 'cn' } 
     };
     for (const [m, config] of Object.entries(fromToMap)) {
       converterCache.set(m, OpenCC.Converter(config));
@@ -45,23 +46,33 @@ async function initializeWorker() {
     await store.init();
     
     try {
-      await store.syncFromJson('./assets/data/lshk-sample.json');
+      // 💡 修正：使用 syncDictionaries 並提供 5 大領域詞庫陣列
+      const activeDictionaries = [
+        './assets/data/dicts/common.json',
+        './assets/data/dicts/hr.json',
+        './assets/data/dicts/compliance.json',
+        './assets/data/dicts/legal.json',
+        './assets/data/dicts/tech.json'
+      ];
+      await store.syncDictionaries(activeDictionaries);
     } catch (syncErr) {
-      console.warn("JSON 同步失敗，將降級使用 IndexedDB 現有快取:", syncErr);
+      console.warn("多模組 JSON 同步失敗，將降級使用 IndexedDB 現有快取:", syncErr);
     }
     
     const activeTerms = await store.getAllTermsFromDB();
     activeTerms.forEach(item => {
-      if (['Approved', 'AutoReplace'].includes(item.status)) {
-        hotDictCache[item.source] = item.target;
-      }
-      if (['Draft', 'Forbidden'].includes(item.status)) {
-        warningDictCache[item.source] = item.status; // 精簡結構
+      // 依狀態分流
+      if (item.status === 'AutoReplace') {
+        autoReplaceCache[item.source] = item.target;
+      } else if (item.status === 'Approved') {
+        approvedCache[item.source] = item.target;
+      } else if (['Draft', 'Forbidden'].includes(item.status)) {
+        warningDictCache[item.source] = item.status; 
       }
     });
     
     workerState = 'ready';
-    const termCount = Object.keys(hotDictCache).length;
+    const termCount = Object.keys(autoReplaceCache).length + Object.keys(approvedCache).length;
     
     // 離線且空庫的降級提示
     const warningMsg = termCount === 0 ? '本地術語庫為空 (系統可能處於離線狀態)' : null;
@@ -91,17 +102,28 @@ onmessage = function(e) {
   
   try {
     const warningSet = new Set();
+    const approvedReplacements = []; // 用於記錄命中的 Approved 詞彙
     
-    // 警告掃描限定：僅在來源為簡體時 (s2hk / s2twp) 觸發企業術語審查
+    // 前置掃描：僅在來源為簡體時觸發
     if (mode === 's2hk' || mode === 's2twp') {
+      // 1. Draft & Forbidden 警告掃描
       for (const [sourceTerm, status] of Object.entries(warningDictCache)) {
         if (text.includes(sourceTerm)) {
           const prefix = status === 'Forbidden' ? '🚫 禁用詞' : '⚠️ 待確認';
           warningSet.add(`${prefix}：${sourceTerm}`);
         }
       }
+      
+      // 2. Approved 替換追蹤 (準備回傳給 UI 畫虛底線)
+      for (const sourceTerm of Object.keys(approvedCache)) {
+        if (text.includes(sourceTerm)) {
+          approvedReplacements.push(sourceTerm);
+        }
+      }
     }
 
+    // 將兩種替換詞庫合併，交給底層保護層
+    const hotDictCache = { ...autoReplaceCache, ...approvedCache };
     const activeConverter = converterCache.get(mode);
     const result = applyProtectionAndConversion(text, mode, activeConverter, hotDictCache);
     
@@ -109,6 +131,7 @@ onmessage = function(e) {
       status: 'success', 
       result: result, 
       warnings: [...warningSet],
+      approvedReplacements: approvedReplacements, // 💡 回傳給 app.js 進行渲染
       requestId: requestId 
     });
   } catch (err) {
