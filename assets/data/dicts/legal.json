@@ -1,0 +1,51 @@
+{
+  "_metadata": {
+    "version": 3,
+    "priority": 40,
+    "domain": "legal",
+    "lastUpdated": "2026-10-17",
+    "description": "法務與合約專用嚴謹詞彙"
+  },
+  "法人代表": {
+    "target": "公司獲授權代表",
+    "level": "L3",
+    "status": "Draft",
+    "note": "兩地公司法概念差異，需由法務確認",
+    "source": { "name": "法務部指引", "url": "" }
+  },
+  "违约金": {
+    "target": "預定損害賠償",
+    "level": "L4",
+    "status": "Draft",
+    "note": "香港法院採用真正的預估損失測試；若視為罰款（penalty）則不可執行",
+    "source": { "name": "法務部指引", "url": "" }
+  },
+  "定金": {
+    "target": "訂金",
+    "level": "L4",
+    "status": "Draft",
+    "note": "大陸「定金」具懲罰性（雙倍返還），香港「訂金」通常僅為預付款，法律效果完全不同",
+    "source": { "name": "法務部指引", "url": "" }
+  },
+  "保证金": {
+    "target": "按金",
+    "level": "L4",
+    "status": "Draft",
+    "note": "兩地商務合約履行擔保概念差異",
+    "source": { "name": "法務部指引", "url": "" }
+  },
+  "不可抗力": {
+    "target": "不可抗力",
+    "level": "L2",
+    "status": "Approved",
+    "note": "概念相近 (Force Majeure)，允許直接使用",
+    "source": { "name": "法務部指引", "url": "" }
+  },
+  "缔约过失责任": {
+    "target": "締約過失責任",
+    "level": "L4",
+    "status": "Draft",
+    "note": "大陸法系特有概念，普通法系無直接對應，通常以不實陳述 (Misrepresentation) 或侵權處理",
+    "source": { "name": "法務部指引", "url": "" }
+  }
+}
