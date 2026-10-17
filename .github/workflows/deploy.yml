@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: 取得代碼
         uses: actions/checkout@v4
-      
+        
       - name: 設定 Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -62,6 +62,7 @@ jobs:
           mkdir deploy_dist
           # 補齊所有核心依賴腳本與 PWA 圖示檔
           cp index.html app.js worker.js sw.js terms-db.js custom-dict.js manifest.json *.png deploy_dist/
+          # 💡 遞迴複製 assets：會自動包含全新的 data/dicts/ 多模組 JSON 詞庫
           cp -r assets deploy_dist/
           # 建立 .nojekyll 檔案，防止 GitHub Pages 忽略底線開頭的隱藏檔案
           touch deploy_dist/.nojekyll
