@@ -1,0 +1,37 @@
+{
+  "_metadata": {
+    "version": 3,
+    "priority": 10,
+    "domain": "common",
+    "lastUpdated": "2026-10-17",
+    "description": "通用企業與商務術語"
+  },
+  "项目计划": {
+    "target": "專案計劃",
+    "level": "L1",
+    "status": "AutoReplace",
+    "note": "長詞優先匹配",
+    "source": { "name": "企業通用規範", "url": "" }
+  },
+  "项目清单": {
+    "target": "項目清單",
+    "level": "L1",
+    "status": "AutoReplace",
+    "note": "長詞優先匹配",
+    "source": { "name": "企業通用規範", "url": "" }
+  },
+  "项目": {
+    "target": "項目",
+    "level": "L2",
+    "status": "Draft",
+    "note": "需語境判斷：Project 替換為專案，Item 保留為項目",
+    "source": { "name": "企業通用規範", "url": "" }
+  },
+  "信息": {
+    "target": "資訊",
+    "level": "L1",
+    "status": "Approved",
+    "note": "需語境判斷：Information 替換為資訊，Message 替換為訊息",
+    "source": { "name": "企業通用規範", "url": "" }
+  }
+}
