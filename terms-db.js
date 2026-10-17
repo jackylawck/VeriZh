@@ -74,46 +74,57 @@ class TerminologyStore {
     });
   }
 
-  async syncFromJson(jsonUrl) {
+  // 💡 核心升級：支援多模組 JSON 並行載入與 Priority 權重合併
+  async syncDictionaries(urlList) {
     this._ensureDB();
     try {
-      const response = await fetch(jsonUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-        throw new Error('JSON 格式錯誤：預期為物件');
-      }
-      
-      const metaVersion = data._metadata?.version;
-      const newVersion = Number.isInteger(metaVersion) ? metaVersion : null;
-      
-      // 缺失版本號的安全降級處理
-      if (newVersion === null) {
-        console.warn('⚠️ JSON 缺少有效的 _metadata.version，跳過版本同步以避免不必要的清除。');
-        const rawVersion = await this.getMetadata('jsonVersion');
-        if (rawVersion === null) {
-          await this._writeAllTerms(data);
-          await this.setMetadata('jsonVersion', -1);
+      let combinedVersion = 0;
+      const fetchedDicts = [];
+
+      // 1. 並行抓取所有詞庫模組
+      const responses = await Promise.allSettled(urlList.map(url => fetch(url)));
+      for (const result of responses) {
+        if (result.status === 'fulfilled' && result.value.ok) {
+          const data = await result.value.json();
+          if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+            fetchedDicts.push(data);
+          }
         }
+      }
+
+      if (fetchedDicts.length === 0) {
+        console.warn('⚠️ 無法載入任何詞庫模組，跳過同步。');
         return;
       }
-      
-      // 💡 徹底解決 Falsy Value 陷阱：明確區分 null 與 0
+
+      // 2. 依照 priority 升序排序 (確保高權重模組最後合併，覆寫低權重)
+      fetchedDicts.sort((a, b) => {
+        const pA = a._metadata?.priority || 0;
+        const pB = b._metadata?.priority || 0;
+        return pA - pB;
+      });
+
+      // 3. 執行合併與總雜湊版本號計算
+      let mergedData = {};
+      for (const data of fetchedDicts) {
+        if (data._metadata?.version) combinedVersion += data._metadata.version;
+        for (const [source, record] of Object.entries(data)) {
+          if (source !== '_metadata') {
+            mergedData[source] = record;
+          }
+        }
+      }
+
       const rawVersion = await this.getMetadata('jsonVersion');
       const currentVersion = rawVersion === null ? null : parseInt(rawVersion, 10);
 
-      // 首次載入（currentVersion === null）或版本號不同時，執行同步
-      if (currentVersion === null || currentVersion !== newVersion) {
-        console.log(`🔄 詞庫同步: ${currentVersion === null ? '首次載入' : `v${currentVersion} ➔ v${newVersion}`}`);
-        await this._writeAllTerms(data);
-        await this.setMetadata('jsonVersion', newVersion);
+      if (currentVersion === null || currentVersion !== combinedVersion) {
+        console.log(`🔄 詞庫依權重合併完成: 總版本號 v${combinedVersion}`);
+        await this._writeAllTerms(mergedData);
+        await this.setMetadata('jsonVersion', combinedVersion);
       }
     } catch (error) {
-      console.error('JSON 詞庫同步失敗:', error);
+      console.error('多模組詞庫同步發生嚴重錯誤:', error);
       throw error;
     }
   }
