@@ -1,32 +1,31 @@
 // app.js
 
 // ============================================================
-// 0. 頁面級拖放攔截（必須最先註冊，防止瀏覽器預設開啟檔案）
+// 0. 頁面級拖放攔截
 // ============================================================
 window.addEventListener('dragover', (e) => e.preventDefault());
 window.addEventListener('drop', (e) => e.preventDefault());
 
 // ============================================================
-// 1. 註冊 Service Worker（含完美時序的更新提示）
+// 1. 註冊 Service Worker
 // ============================================================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then((registration) => {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        let isUpdatePromptShown = false; // 💡 防重複觸發鎖
+        let isUpdatePromptShown = false; 
 
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !isUpdatePromptShown) {
-            isUpdatePromptShown = true; // 鎖定，避免多次觸發彈窗
+            isUpdatePromptShown = true; 
             
             if (confirm('發現新版本，是否立即重新載入？')) {
               newWorker.postMessage({ type: 'SKIP_WAITING' });
               
-              // 💡 嚴格時序：等新版 SW 確定接管後，才執行 reload
               navigator.serviceWorker.addEventListener('controllerchange', () => {
                 window.location.reload();
-              }, { once: true }); // 確保只觸發一次
+              }, { once: true });
             }
           }
         });
@@ -41,7 +40,7 @@ if ('serviceWorker' in navigator) {
 // 2. DOM 元素取得與無障礙屬性設定
 // ============================================================
 const sourceText = document.getElementById('sourceText');
-const targetText = document.getElementById('targetText');
+const outputText = document.getElementById('outputText'); // 💡 改為抓取 div.rich-output
 const modeSelect = document.getElementById('conversionMode');
 const statusIndicator = document.getElementById('statusIndicator');
 const warningBanner = document.getElementById('warningBanner');
@@ -53,8 +52,6 @@ statusIndicator.setAttribute('role', 'status');
 warningBanner.setAttribute('role', 'alert');
 warningBanner.setAttribute('aria-live', 'assertive');
 sourceText.setAttribute('aria-label', '輸入要轉換的文字');
-targetText.setAttribute('aria-label', '轉換結果');
-targetText.readOnly = true;
 
 // ============================================================
 // 3. 實例化 Web Worker 與初始化狀態鎖
@@ -68,12 +65,13 @@ let debounceTimer;
 let isComposing = false;
 let requestId = 0;
 let latestRequestId = 0;
+let lastConvertedText = ''; // 💡 新增：儲存純文字供「複製」按鈕使用，避免複製到 HTML 標籤
 
 // ============================================================
-// 4. Worker 訊息與錯誤處理
+// 4. Worker 訊息與錯誤處理 (包含富文本渲染)
 // ============================================================
 converterWorker.onmessage = function (e) {
-  const { status, result, error, warnings, warning, termCount, requestId: responseId } = e.data;
+  const { status, result, error, warnings, warning, termCount, requestId: responseId, approvedReplacements } = e.data;
 
   if (status === 'ready') {
     statusIndicator.textContent = `✅ 系統就緒 (已掛載 ${termCount} 條企業術語)`;
@@ -87,12 +85,31 @@ converterWorker.onmessage = function (e) {
   }
 
   // 防範請求競態
-  if (responseId !== undefined && responseId !== latestRequestId) {
-    return;
-  }
+  if (responseId !== undefined && responseId !== latestRequestId) return;
 
   if (status === 'success') {
-    targetText.value = result;
+    lastConvertedText = result; // 備份最純淨的文字供複製使用
+
+    // 💡 1. 基礎 XSS 防護：將原文的 HTML 特殊字元安全轉義
+    let safeHTML = result
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 💡 2. 標註 Approved 虛底線與 Tooltip
+    if (approvedReplacements && approvedReplacements.length > 0) {
+      // 依長度遞減排序，避免長詞被短詞截斷（例如「專案計劃」被「專案」截斷）
+      const uniqueTerms = [...new Set(approvedReplacements)].sort((a, b) => b.length - a.length);
+      
+      uniqueTerms.forEach(term => {
+        // 跳脫正則保留字元，確保替換安全
+        const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safeTerm})`, 'g');
+        safeHTML = safeHTML.replace(regex, `<span class="approved-term" title="合規與習慣用語替換 (Approved)">$1</span>`);
+      });
+    }
+
+    outputText.innerHTML = safeHTML;
     statusIndicator.textContent = `✅ 轉換完成 (${result.length} 字 / ${result.split('\n').length} 行)`;
 
     if (warnings && warnings.length > 0) {
@@ -115,7 +132,7 @@ converterWorker.onerror = function (error) {
 };
 
 // ============================================================
-// 5. 觸發轉換邏輯（支援立即觸發與自適應防抖）
+// 5. 觸發轉換邏輯
 // ============================================================
 function triggerConversion(immediate = false) {
   clearTimeout(debounceTimer);
@@ -124,7 +141,8 @@ function triggerConversion(immediate = false) {
   const mode = modeSelect.value;
 
   if (!text.trim()) {
-    targetText.value = '';
+    outputText.innerHTML = '轉換結果將顯示於此...';
+    lastConvertedText = '';
     statusIndicator.textContent = 'Ready';
     warningBanner.style.display = 'none';
     return;
@@ -146,7 +164,7 @@ function triggerConversion(immediate = false) {
 }
 
 // ============================================================
-// 6. 事件監聽（組字鎖與快捷鍵）
+// 6. 事件監聽
 // ============================================================
 sourceText.addEventListener('compositionstart', () => { isComposing = true; });
 sourceText.addEventListener('compositionend', () => {
@@ -156,17 +174,17 @@ sourceText.addEventListener('compositionend', () => {
 sourceText.addEventListener('input', () => {
   if (!isComposing) triggerConversion();
 });
-modeSelect.addEventListener('change', () => triggerConversion(true)); // 切換模式時也應立即轉換
+modeSelect.addEventListener('change', () => triggerConversion(true)); 
 
 sourceText.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
-    triggerConversion(true); // 真正跳過防抖，即刻發車
+    triggerConversion(true); 
   }
 });
 
 // ============================================================
-// 7. 剪貼簿複製
+// 7. 剪貼簿複製 (使用備份的純文字)
 // ============================================================
 async function copyToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
@@ -193,9 +211,9 @@ async function copyToClipboard(text) {
 
 copyBtn.addEventListener('click', async () => {
   const originalText = copyBtn.textContent;
-  if (!targetText.value) return;
+  if (!lastConvertedText) return; // 💡 改為判斷純文字備份
 
-  const success = await copyToClipboard(targetText.value);
+  const success = await copyToClipboard(lastConvertedText); // 💡 複製純文字
   copyBtn.textContent = success ? '✅ 已複製' : '❌ 失敗';
   setTimeout(() => copyBtn.textContent = originalText, 2000);
 });
@@ -267,7 +285,7 @@ sourceText.addEventListener('drop', (e) => {
   const reader = new FileReader();
   reader.onload = (event) => {
     sourceText.value = event.target.result;
-    triggerConversion(); // 讀取完畢後走一般防抖管線即可
+    triggerConversion(); 
   };
   reader.readAsText(file);
 });
