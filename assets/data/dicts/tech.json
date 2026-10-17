@@ -1,0 +1,23 @@
+{
+  "_metadata": {
+    "version": 3,
+    "priority": 10,
+    "domain": "tech",
+    "lastUpdated": "2026-10-17",
+    "description": "資訊科技與軟體工程用語"
+  },
+  "服务器": {
+    "target": "伺服器",
+    "level": "L2",
+    "status": "AutoReplace",
+    "note": "參考 OGCIO 資訊科技辭彙",
+    "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
+  },
+  "数据库": {
+    "target": "資料庫",
+    "level": "L2",
+    "status": "AutoReplace",
+    "note": "參考 OGCIO 資訊科技辭彙",
+    "source": { "name": "OGCIO 資訊科技辭彙", "url": "https://www.ogcio.gov.hk/tc/our_work/infrastructure/methodology/glossary/" }
+  }
+}
